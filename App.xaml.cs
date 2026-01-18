@@ -1,13 +1,8 @@
-﻿using System.Configuration;
-using System.Data;
 using System.Windows;
 
-namespace AfterCopy;
-
-/// <summary>
-/// Interaction logic for App.xaml
-/// </summary>
-public partial class App : Application
+namespace AfterCopy
 {
+    public partial class App : Application
+    {
+    }
 }
-
