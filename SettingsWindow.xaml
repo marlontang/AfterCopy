@@ -1,0 +1,159 @@
+<Window x:Class="AfterCopy.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:helpers="clr-namespace:AfterCopy.Helpers"
+        Title="Settings" Icon="image/icon.png" Height="420" Width="400"
+        WindowStyle="None"
+        ResizeMode="CanResize"
+        Background="{StaticResource PrimaryBackgroundBrush}"
+        WindowStartupLocation="CenterScreen"
+        BorderBrush="#333333"
+        BorderThickness="1">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="5" CaptionHeight="0" GlassFrameThickness="0" CornerRadius="0"/>
+    </WindowChrome.WindowChrome>
+
+    <Window.Resources>
+        <!-- Modern Toggle Switch Style for CheckBox -->
+        <Style x:Key="ToggleSwitchStyle" TargetType="CheckBox">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Grid Background="Transparent" Cursor="Hand">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <ContentPresenter Grid.Column="0" 
+                                              VerticalAlignment="Center" 
+                                              Content="{TemplateBinding Content}"
+                                              TextBlock.Foreground="White"
+                                              TextBlock.FontSize="14"/>
+
+                            <Border x:Name="SwitchTrack" 
+                                    Grid.Column="1" 
+                                    Width="40" Height="20" 
+                                    CornerRadius="10" 
+                                    Background="#333333"
+                                    BorderBrush="#555"
+                                    BorderThickness="1">
+                                <Ellipse x:Name="SwitchKnob" 
+                                         Width="16" Height="16" 
+                                         Fill="White"
+                                         HorizontalAlignment="Left"
+                                         Margin="1,0,0,0"/>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SwitchTrack" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="SwitchTrack" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="SwitchKnob" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="SwitchKnob" Property="Margin" Value="0,0,1,0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="40"/> <!-- Header -->
+            <RowDefinition Height="*"/>    <!-- Content -->
+        </Grid.RowDefinitions>
+
+        <!-- Header -->
+        <Grid Grid.Row="0" Background="#222" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+            <TextBlock Text="SETTINGS" Foreground="White" FontWeight="Bold" FontSize="14" VerticalAlignment="Center" Margin="15,0"/>
+            
+            <Button HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"
+                    Width="30" Height="30" Background="Transparent" BorderThickness="0"
+                    Click="CloseButton_Click" Cursor="Hand">
+                <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" 
+                      Fill="White" Stretch="Uniform" Margin="8"/>
+            </Button>
+        </Grid>
+
+        <!-- Content Stack -->
+        <StackPanel Grid.Row="1" Margin="25">
+            
+            <!-- SECTION: GENERAL -->
+            <TextBlock Text="GENERAL" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" FontSize="12" Margin="0,0,0,10"/>
+            
+            <CheckBox x:Name="AutoSaveToggle" 
+                      Content="Auto-Save to History" 
+                      Style="{StaticResource ToggleSwitchStyle}"
+                      Margin="0,0,0,15"
+                      Click="Setting_Changed"/>
+
+            <CheckBox x:Name="ImagePreviewToggle" 
+                      Content="Show Image Previews" 
+                      Style="{StaticResource ToggleSwitchStyle}"
+                      Margin="0,0,0,25"
+                      Click="Setting_Changed"/>
+
+            <!-- SECTION: WINDOW -->
+            <TextBlock Text="WINDOW" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" FontSize="12" Margin="0,0,0,10"/>
+
+            <!-- Window Size (Read-only display) -->
+            <Grid Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Current Window Size" Foreground="White" VerticalAlignment="Center" FontSize="14"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <TextBlock x:Name="SizeDisplay" Foreground="#888" VerticalAlignment="Center" FontSize="14"/>
+                </StackPanel>
+            </Grid>
+
+            <!-- Tab Count -->
+            <Grid Margin="0,0,0,25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Quick Access Tabs" Foreground="White" VerticalAlignment="Center" FontSize="14"/>
+                <ComboBox x:Name="TabCountCombo" Grid.Column="1" Width="80" Height="30"
+                          Background="#333" Foreground="Black"
+                          SelectionChanged="TabCountCombo_SelectionChanged">
+                    <ComboBoxItem Content="1" Tag="1"/>
+                    <ComboBoxItem Content="2" Tag="2"/>
+                    <ComboBoxItem Content="3" Tag="3"/>
+                    <ComboBoxItem Content="4" Tag="4"/>
+                    <ComboBoxItem Content="5" Tag="5"/>
+                    <ComboBoxItem Content="6" Tag="6"/>
+                    <ComboBoxItem Content="7" Tag="7"/>
+                    <ComboBoxItem Content="8" Tag="8"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- SECTION: SHORTCUTS -->
+            <TextBlock Text="SHORTCUTS" Foreground="{StaticResource AccentBrush}" FontWeight="Bold" FontSize="12" Margin="0,0,0,10"/>
+            
+            <Grid Margin="0,0,0,15">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="Toggle Overlay Hotkey" Foreground="White" VerticalAlignment="Center" FontSize="14"/>
+                <ComboBox x:Name="HotkeyCombo" Grid.Column="1" Width="120" Height="30" 
+                          Background="#333" Foreground="Black"
+                          SelectionChanged="Setting_Changed">
+                    <!-- Simple preset list for MVP -->
+                    <ComboBoxItem Content="Alt + ~" Tag="OemTilde"/>
+                    <ComboBoxItem Content="Alt + V" Tag="V"/>
+                    <ComboBoxItem Content="Alt + Space" Tag="Space"/>
+                    <ComboBoxItem Content="Ctrl + Shift + V" Tag="V_CtrlShift"/>
+                </ComboBox>
+            </Grid>
+
+            <!-- Info -->
+            <TextBlock Text="AfterCopy v1.0" Foreground="#666" FontSize="12" HorizontalAlignment="Center"/>
+        </StackPanel>
+    </Grid>
+</Window>

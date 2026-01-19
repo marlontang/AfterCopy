@@ -4,27 +4,234 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:AfterCopy"
+        xmlns:vm="clr-namespace:AfterCopy.ViewModels"
+        xmlns:models="clr-namespace:AfterCopy.Models"
+        xmlns:helpers="clr-namespace:AfterCopy.Helpers"
         mc:Ignorable="d"
-        Title="AfterCopy Overlay" 
-        Height="200" Width="200"
+        Title="AfterCopy" 
+        Icon="image/icon.png"
+        Height="200" Width="300"
+        MinWidth="200" MinHeight="200"
+        MaxWidth="800" MaxHeight="800"
         WindowStyle="None"
         AllowsTransparency="True"
-        Background="#CC000000"
+        Background="Transparent"
         Topmost="True"
-        ShowInTaskbar="False"
-        ShowActivated="False"
-        ResizeMode="NoResize"
-        Loaded="Window_Loaded">
-    <Grid>
-        <Border BorderBrush="#33FFFFFF" BorderThickness="1">
-            <TextBlock x:Name="ClipboardText" 
-                       Text="Waiting for copy..."
-                       Foreground="White"
-                       TextWrapping="Wrap"
-                       Margin="10"
-                       FontSize="14"
-                       VerticalAlignment="Top"
-                       HorizontalAlignment="Left"/>
-        </Border>
-    </Grid>
+        ShowInTaskbar="True"
+        ResizeMode="CanResize"
+        Loaded="Window_Loaded"
+        Closing="Window_Closing"
+        PreviewKeyDown="Window_PreviewKeyDown"
+        SizeChanged="Window_SizeChanged">
+
+    <WindowChrome.WindowChrome>
+        <WindowChrome ResizeBorderThickness="5" 
+                      CaptionHeight="0"
+                      GlassFrameThickness="0" 
+                      CornerRadius="0"/>
+    </WindowChrome.WindowChrome>
+
+    <!-- RESOURCES MUST BE DEFINED BEFORE BEING USED IN STYLES -->
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <helpers:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <helpers:IsEqualityConverter x:Key="IsEqualityConverter"/>
+        
+        <!-- Icons -->
+        <Geometry x:Key="TextIcon">M14,17H7V15H14M17,13H7V11H17M17,9H7V7H17M19,3H5C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3Z</Geometry>
+        <Geometry x:Key="GearIcon">M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.7-1.62-0.94L14.4,2.81c-0.04-0.24-0.24-0.41-0.48-0.41 h-3.84c-0.24,0-0.43,0.17-0.47,0.41L9.25,5.35C8.66,5.59,8.12,5.92,7.63,6.29L5.24,5.33c-0.22-0.08-0.47,0-0.59,0.22L2.74,8.87 C2.62,9.08,2.66,9.34,2.86,9.48l2.03,1.58C4.84,11.36,4.8,11.69,4.8,12s0.02,0.64,0.07,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.7,1.62,0.94l0.36,2.54 c0.05,0.24,0.24,0.41,0.48,0.41h3.84c0.24,0,0.44-0.17,0.47-0.41l0.36-2.54c0.59-0.24,1.13-0.56,1.62-0.94l2.39,0.96 c0.22,0.08,0.47,0,0.59-0.22l1.92-3.32c0.12-0.22,0.07-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z</Geometry>
+        <Geometry x:Key="PinIcon">M16,12V4H17V2H7V4H8V12L6,14V16H11.2V22H12.8V16H18V14L16,12Z</Geometry>
+        <Geometry x:Key="TrashIcon">M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z</Geometry>
+        <Geometry x:Key="HistoryIcon">M13.5,8H12V13L16.28,15.54L17,14.33L13.5,12.25V8M13,3A9,9 0 0,0 4,12H1L4.96,16.03L9,12H6A7,7 0 0,1 13,5A7,7 0 0,1 20,12A7,7 0 0,1 13,19C11.07,19 9.32,18.21 8.06,16.94L6.64,18.36C8.27,20 10.5,21 13,21A9,9 0 0,0 22,12A9,9 0 0,0 13,3</Geometry>
+
+        <DataTemplate x:Key="HistoryTabTemplate">
+             <Grid Margin="0,5" Width="30" Height="30">
+                 <!-- Main Load Button -->
+                 <Button Command="{Binding DataContext.LoadItemCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                         CommandParameter="{Binding}"
+                         BorderThickness="0"
+                         ToolTip="{Binding Content}">
+                     <Button.Style>
+                         <Style TargetType="Button">
+                             <Setter Property="Background" Value="Transparent"/>
+                             <Style.Triggers>
+                                 <DataTrigger Value="True">
+                                     <DataTrigger.Binding>
+                                         <MultiBinding Converter="{StaticResource IsEqualityConverter}">
+                                             <Binding Path="." />
+                                             <Binding Path="DataContext.CurrentItem" RelativeSource="{RelativeSource AncestorType=Window}" />
+                                         </MultiBinding>
+                                     </DataTrigger.Binding>
+                                     <Setter Property="Background" Value="{StaticResource AccentBrush}"/> <!-- Active Background (Red) -->
+                                 </DataTrigger>
+                             </Style.Triggers>
+                         </Style>
+                     </Button.Style>
+                     <Grid>
+                        <!-- Base Icon -->
+                         <Path x:Name="IconPath" Data="{StaticResource TextIcon}" Fill="#555" Stretch="Uniform" Margin="6"/>
+                         
+                         <!-- Keyboard Shortcut Hint (1, 2, 3) -->
+                         <Border Background="#333" CornerRadius="3" VerticalAlignment="Bottom" HorizontalAlignment="Right" Margin="-2,-2,0,0" Padding="3,0"
+                                 Visibility="{Binding QuickKey, Converter={StaticResource StringToVisibilityConverter}}">
+                             <TextBlock x:Name="ShortcutText" Text="{Binding QuickKey}" Foreground="#AAA" FontSize="9" FontWeight="Bold"/>
+                         </Border>
+
+                         <!-- Pinned Indicator -->
+                         <Path Data="{StaticResource PinIcon}" Fill="#E50914" Stretch="Uniform" Margin="0" Width="10" Height="10" 
+                               HorizontalAlignment="Left" VerticalAlignment="Top"
+                               Visibility="{Binding IsPinned, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                     </Grid>
+                 </Button>
+
+                 <!-- Pin Toggle (Right Click) -->
+                 <Grid.InputBindings>
+                     <MouseBinding MouseAction="RightClick" 
+                                   Command="{Binding DataContext.TogglePinCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   CommandParameter="{Binding}"/>
+                 </Grid.InputBindings>
+             </Grid>
+             <DataTemplate.Triggers>
+                 <!-- Change Icon Color if Selected -->
+                 <DataTrigger Value="True">
+                     <DataTrigger.Binding>
+                         <MultiBinding Converter="{StaticResource IsEqualityConverter}">
+                             <Binding Path="." />
+                             <Binding Path="DataContext.CurrentItem" RelativeSource="{RelativeSource AncestorType=Window}" />
+                         </MultiBinding>
+                     </DataTrigger.Binding>
+                     <Setter TargetName="IconPath" Property="Fill" Value="White"/>
+                     <Setter TargetName="ShortcutText" Property="Foreground" Value="White"/>
+                 </DataTrigger>
+             </DataTemplate.Triggers>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Border Background="{StaticResource PrimaryBackgroundBrush}" 
+            BorderBrush="#333333" 
+            BorderThickness="1" 
+            CornerRadius="0">
+        
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50"/> <!-- Sidebar -->
+                <ColumnDefinition Width="*"/>  <!-- Main Content -->
+            </Grid.ColumnDefinitions>
+
+            <!-- 1. LEFT SIDEBAR (Recent History) -->
+            <Border Grid.Column="0" Background="Black" BorderBrush="#333" BorderThickness="0,0,1,0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- Logo -->
+                        <RowDefinition Height="*"/>    <!-- Tabs -->
+                        <RowDefinition Height="Auto"/> <!-- Bottom Actions -->
+                    </Grid.RowDefinitions>
+                    
+                    <!-- App Logo / Top (Draggable) -->
+                    <Border Grid.Row="0" Height="40" Background="#E50914" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                        <TextBlock Text="AC" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+
+                    <!-- List of Recent Items -->
+                    <ItemsControl Grid.Row="1" ItemsSource="{Binding RecentHistory}" ItemTemplate="{StaticResource HistoryTabTemplate}" Margin="0,10,0,0"/>
+
+                    <!-- Bottom Actions (Sidebar) -->
+                    <StackPanel Grid.Row="2" Margin="0,0,0,10">
+                         <!-- HIST Button (Moved here) -->
+                         <Button Click="ViewHistory_Click" Style="{StaticResource SecondaryButtonStyle}" Width="30" Height="30" Padding="0" Margin="0,0,0,5" Background="Transparent" ToolTip="History">
+                             <Path Data="{StaticResource HistoryIcon}" Fill="#555" Width="14" Height="14" Stretch="Uniform"/>
+                         </Button>
+
+                         <!-- Settings Button -->
+                         <Button Style="{StaticResource SecondaryButtonStyle}" Width="30" Height="30" Padding="0" Click="Settings_Click" Background="Transparent" ToolTip="Settings">
+                             <Path Data="{StaticResource GearIcon}" Fill="#555" Width="14" Height="14" Stretch="Uniform"/>
+                         </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- 2. MAIN CONTENT (Right) -->
+            <Grid Grid.Column="1">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="40"/> <!-- Header -->
+                    <RowDefinition Height="*"/>  <!-- Content -->
+                    <RowDefinition Height="50"/> <!-- Footer -->
+                </Grid.RowDefinitions>
+
+                <!-- Full Header Drag Area (Background) -->
+                <Border Grid.Row="0" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown"/>
+
+                <!-- Header Content (Foreground) -->
+                <Grid Grid.Row="0" Margin="10,0" Background="Transparent" MouseLeftButtonDown="Header_MouseLeftButtonDown">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock Text="{Binding StatusMessage}" Foreground="#E50914" FontWeight="Bold" VerticalAlignment="Center" FontSize="12" IsHitTestVisible="False"/>
+
+                    <!-- Minimize Button (—) - Minimizes to Taskbar -->
+                    <Button Grid.Column="1" Click="MinimizeWindow_Click"
+                            Width="30" Height="30" Background="Transparent" BorderThickness="0" Cursor="Hand"
+                            ToolTip="Minimize">
+                         <Path Data="M19,13H5V11H19V13Z"
+                               Fill="White" Stretch="Uniform" Margin="8"/>
+                    </Button>
+
+                    <!-- Close Button (X) - Exits Application -->
+                    <Button Grid.Column="2" Click="CloseWindow_Click"
+                            Width="30" Height="30" Background="Transparent" BorderThickness="0" Cursor="Hand"
+                            ToolTip="Exit">
+                         <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"
+                               Fill="White" Stretch="Uniform" Margin="8"/>
+                    </Button>
+                </Grid>
+
+                <!-- Content -->
+                <Border Grid.Row="1" Margin="10,0,10,0" ClipToBounds="True">
+                    <Grid>
+                         <!-- Text (Editable) -->
+                         <ScrollViewer VerticalScrollBarVisibility="Auto" 
+                                       Visibility="{Binding IsImageVisible, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                             <TextBox x:Name="ContentTextBox"
+                                        Text="{Binding CurrentItem.Content, UpdateSourceTrigger=PropertyChanged, FallbackValue='Waiting...'}"
+                                        Foreground="White"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        FontFamily="Consolas"
+                                        FontSize="14"
+                                        TextWrapping="Wrap"
+                                        AcceptsReturn="True"
+                                        SelectionBrush="#E50914"
+                                        CaretBrush="White"/>
+                         </ScrollViewer>
+                         
+                         <!-- Image -->
+                         <Image Source="{Binding CurrentImageSource}" Stretch="Uniform"
+                                Visibility="{Binding IsImageVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Footer Buttons -->
+                <Grid Grid.Row="2" Background="#111">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    
+                    <!-- Start/Stop Copy Button (Footer Left) -->
+                    <Button Grid.Column="0"
+                            Content="{Binding MonitoringButtonText}"
+                            Command="{Binding ToggleMonitoringCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Margin="5" FontSize="11"/>
+                    
+                    <Button Grid.Column="1" Content="SAVE" Command="{Binding SaveCommand}" Visibility="{Binding IsSaveButtonVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Style="{StaticResource SecondaryButtonStyle}" Margin="5" FontSize="11" Width="80"/>
+                    <Button Grid.Column="2" Content="COPY" Command="{Binding CopyCommand}" Click="Copy_Click" Style="{StaticResource NetflixButtonStyle}" Margin="5" FontSize="12"/>
+                </Grid>
+            </Grid>
+        </Grid>
+    </Border>
 </Window>

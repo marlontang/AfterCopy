@@ -1,0 +1,20 @@
+PS D:\work\AI\AfterCopy> dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishReadyToRun=true
+>>
+还原完成(3.1)
+  AfterCopy_hzrztp4c_wpftmp net10.0-windows win-x64 失败，出现 1 错误和 13 警告 (0.8 秒)
+    D:\work\AI\AfterCopy\Helpers\ImagePathConverter.cs(22,20): warning CS8603: 可能返回 null 引用。
+    D:\work\AI\AfterCopy\Services\ClipboardService.cs(35,34): warning CS8600: 将 null 文本或可能的 null 值转换为不可为 null 类型。
+    D:\work\AI\AfterCopy\Services\ConfigService.cs(14,16): warning CS8618: 在退出构造函数时，不可为 null 的 字段 "_currentConfig" 必须包含非 null 值。请考虑添加 "required" 修饰符或将该  字段 声明为可为 null。
+    D:\work\AI\AfterCopy\SettingsWindow.xaml.cs(15,16): warning CS8618: 在退出构造函数时，不可为 null 的 事件 "OnSettingsSaved" 必须包含非 null 值。请考虑添加 "required" 修饰符或将该 事 件 声明为可为 null。
+    D:\work\AI\AfterCopy\SettingsWindow.xaml.cs(15,16): warning CS8618: 在退出构造函数时，不可为 null 的 字段 "_tempConfig" 必须包含非 null 值。请考虑添加 "required" 修饰符或将该 字段 声明为可为 null。
+    D:\work\AI\AfterCopy\Services\HotkeyService.cs(46,63): warning CS8600: 将 null 文本或可能的 null 值转换为不可为 null 类型。
+    D:\work\AI\AfterCopy\Services\HotkeyService.cs(22,24): warning CS8618: 在退出构造函数时，不可为 null 的 字段 "_onHotkeyAction" 必须包含非 null 值。请考虑添加 "required" 修饰符或将该 字段 声明为可为 null。
+    D:\work\AI\AfterCopy\Services\ClipboardService.cs(20,44): warning CS8618: 在退出构造函数时，不可为 null 的 事件 "ClipboardChanged" 必须包含非 null 值。请考虑添加 "required" 修饰符或 将该 事件 声明为可为 null。
+    D:\work\AI\AfterCopy\SettingsWindow.xaml.cs(93,41): warning CS8601: 可能的 null 引用赋值。
+    D:\work\AI\AfterCopy\DailyLogWindow.xaml.cs(94,100): warning CS8625: 无法将 null 字面量转换为非 null 的引用类型。
+    D:\work\AI\AfterCopy\DailyLogWindow.xaml.cs(94,106): warning CS8625: 无法将 null 字面量转换为非 null 的引用类型。
+    D:\work\AI\AfterCopy\DailyLogWindow.xaml.cs(94,112): warning CS8625: 无法将 null 字面量转换为非 null 的引用类型。
+    D:\work\AI\AfterCopy\MainWindow.xaml(183,108): error CS1061: “MainWindow”未包含“HideWindow_Click”的定义，并且找不到可接受第一个“MainWindow”类型参数的可访问扩展方法“HideWindow_Click”(是否缺少 using 指令或程序集引用?)
+    D:\work\AI\AfterCopy\HistoryWindow.xaml.cs(20,45): warning CS0067: 从不使用事件“HistoryWindow.OnItemSelected”
+
+在 5.5 秒内生成 失败，出现 1 错误和 13 警告
